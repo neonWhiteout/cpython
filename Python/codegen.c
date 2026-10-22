@@ -3478,6 +3478,23 @@ starunpack_helper_impl(compiler *c, location loc,
             if (is_empty_starred_literal(elt)) {
                 continue;
             }
+            expr_ty starred_value = elt->v.Starred.value;
+            if (starred_value->kind == Tuple_kind) {
+                Py_ssize_t starred_end = asdl_seq_LEN(starred_value);
+                for (Py_ssize_t j = 0; j < starred_end; j++) {
+                    expr_ty starred_elt = asdl_seq_GET(starred_value->v.Tuple.elts, j);
+                    VISIT(c, expr, starred_elt);
+                }
+                continue;
+            }
+            if (starred_value->kind == List_kind) {
+                Py_ssize_t starred_end = asdl_seq_LEN(starred_value);
+                for (Py_ssize_t j = 0; j < starred_end; j++) {
+                    expr_ty starred_elt = asdl_seq_GET(starred_value->v.List.elts, j);
+                    VISIT(c, expr, starred_elt);
+                }
+                continue;
+            }
             seen_star = 1;
         }
         n++;
